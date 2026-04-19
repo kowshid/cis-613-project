@@ -35,10 +35,11 @@
 
 package util.concurrent.atomic;
 
+import jdk.internal.misc.Unsafe;
+
 import java.lang.invoke.VarHandle;
 import java.util.function.IntBinaryOperator;
 import java.util.function.IntUnaryOperator;
-import jdk.internal.misc.Unsafe;
 
 /**
  * An {@code int} value that may be updated atomically.  See the
@@ -49,8 +50,8 @@ import jdk.internal.misc.Unsafe;
  * this class does extend {@code Number} to allow uniform access by
  * tools and utilities that deal with numerically-based classes.
  *
- * @since 1.5
  * @author Doug Lea
+ * @since 1.5
  */
 public class AtomicInteger implements java.io.Serializable {
     private static final long serialVersionUID = 6214790243416807050L;
@@ -117,7 +118,7 @@ public class AtomicInteger implements java.io.Serializable {
      * with memory effects as specified by {@link VarHandle#compareAndSet}.
      *
      * @param expectedValue the expected value
-     * @param newValue the new value
+     * @param newValue      the new value
      * @return {@code true} if successful. False return indicates that
      * the actual value was not equal to the expected value.
      */
@@ -208,7 +209,7 @@ public class AtomicInteger implements java.io.Serializable {
      */
     public final int getAndUpdate(IntUnaryOperator updateFunction) {
         int prev = get(), next = 0;
-        for (boolean haveNext = false;;) {
+        for (boolean haveNext = false; ; ) {
             if (!haveNext)
                 next = updateFunction.applyAsInt(prev);
             if (weakCompareAndSetVolatile(prev, next))
@@ -230,7 +231,7 @@ public class AtomicInteger implements java.io.Serializable {
      */
     public final int updateAndGet(IntUnaryOperator updateFunction) {
         int prev = get(), next = 0;
-        for (boolean haveNext = false;;) {
+        for (boolean haveNext = false; ; ) {
             if (!haveNext)
                 next = updateFunction.applyAsInt(prev);
             if (weakCompareAndSetVolatile(prev, next))
@@ -249,14 +250,14 @@ public class AtomicInteger implements java.io.Serializable {
      * applied with the current value as its first argument, and the
      * given update as the second argument.
      *
-     * @param x the update value
+     * @param x                   the update value
      * @param accumulatorFunction a side-effect-free function of two arguments
      * @return the previous value
      * @since 1.8
      */
     public final int getAndAccumulate(int x, IntBinaryOperator accumulatorFunction) {
         int prev = get(), next = 0;
-        for (boolean haveNext = false;;) {
+        for (boolean haveNext = false; ; ) {
             if (!haveNext)
                 next = accumulatorFunction.applyAsInt(prev, x);
             if (weakCompareAndSetVolatile(prev, next))
@@ -275,14 +276,14 @@ public class AtomicInteger implements java.io.Serializable {
      * applied with the current value as its first argument, and the
      * given update as the second argument.
      *
-     * @param x the update value
+     * @param x                   the update value
      * @param accumulatorFunction a side-effect-free function of two arguments
      * @return the updated value
      * @since 1.8
      */
     public final int accumulateAndGet(int x, IntBinaryOperator accumulatorFunction) {
         int prev = get(), next = 0;
-        for (boolean haveNext = false;;) {
+        for (boolean haveNext = false; ; ) {
             if (!haveNext)
                 next = accumulatorFunction.applyAsInt(prev, x);
             if (weakCompareAndSetVolatile(prev, next))
@@ -298,7 +299,7 @@ public class AtomicInteger implements java.io.Serializable {
      * {@link VarHandle#compareAndExchange}.
      *
      * @param expectedValue the expected value
-     * @param newValue the new value
+     * @param newValue      the new value
      * @return the witness value, which will be the same as the
      * expected value if successful
      * @since 9
@@ -314,7 +315,7 @@ public class AtomicInteger implements java.io.Serializable {
      * {@link VarHandle#compareAndExchangeAcquire}.
      *
      * @param expectedValue the expected value
-     * @param newValue the new value
+     * @param newValue      the new value
      * @return the witness value, which will be the same as the
      * expected value if successful
      * @since 9
@@ -330,7 +331,7 @@ public class AtomicInteger implements java.io.Serializable {
      * {@link VarHandle#compareAndExchangeRelease}.
      *
      * @param expectedValue the expected value
-     * @param newValue the new value
+     * @param newValue      the new value
      * @return the witness value, which will be the same as the
      * expected value if successful
      * @since 9
@@ -346,7 +347,7 @@ public class AtomicInteger implements java.io.Serializable {
      * {@link VarHandle#weakCompareAndSet}.
      *
      * @param expectedValue the expected value
-     * @param newValue the new value
+     * @param newValue      the new value
      * @return {@code true} if successful
      * @since 9
      */
