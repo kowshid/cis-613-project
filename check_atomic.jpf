@@ -1,0 +1,3 @@
+target = AtomicBooleanJpfTest
+classpath = .
+search.multiple_errors = false

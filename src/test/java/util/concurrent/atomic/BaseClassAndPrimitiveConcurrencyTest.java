@@ -19,6 +19,87 @@ public class BaseClassAndPrimitiveConcurrencyTest {
     private static final long READER_MAX_LIFESPAN = 5000L;
 
     @Test
+    @DisplayName("testBoolean: DOESNOT demonstrates race condition")
+    void testBooleanRaceCondition() throws InterruptedException {
+        Boolean[] standardBool = {Boolean.FALSE};
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch finishLatch = new CountDownLatch(THREAD_COUNT);
+
+        AtomicInteger observedThreadCount = new AtomicInteger(0);
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            executor.submit(() -> {
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+
+                    if (!standardBool[0]) {
+                        standardBool[0] = Boolean.TRUE;
+                        observedThreadCount.incrementAndGet();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    finishLatch.countDown();
+                }
+            });
+        }
+
+        readyLatch.await();
+        startLatch.countDown();
+        finishLatch.await();
+        executor.shutdown();
+
+        System.out.println("Standard Boolean object race condition allowed " + observedThreadCount.get() +
+                " threads to execute 'once-only' code.");
+        // assertTrue(observedThreadCount.get() > 1);
+    }
+
+    @Test
+    @DisplayName("testPrimitiveBoolean: DOES NOT demonstrates race condition")
+    void testPrimitiveBooleanRaceCondition() throws InterruptedException {
+        boolean[] standardBool = new boolean[]{false};
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch readyLatch = new CountDownLatch(THREAD_COUNT);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch finishLatch = new CountDownLatch(THREAD_COUNT);
+
+        AtomicInteger observedThreadCount = new AtomicInteger(0);
+
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            executor.submit(() -> {
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+
+                    if (!standardBool[0]) {
+                        Thread.sleep(1);
+                        standardBool[0] = true;
+                        observedThreadCount.incrementAndGet();
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    finishLatch.countDown();
+                }
+            });
+        }
+
+        readyLatch.await();
+        startLatch.countDown();
+        finishLatch.await();
+        executor.shutdown();
+
+        System.out.println("Primitive boolean race condition allowed " + observedThreadCount.get() +
+                " threads to execute 'once-only' code.");
+        // assertTrue(observedThreadCount.get() > 1);
+    }
+
+    @Test
     @DisplayName("Primitive Boolean: demonstrates stale condition")
     void testPrimitiveBooleanStaleCondition() throws InterruptedException {
 
